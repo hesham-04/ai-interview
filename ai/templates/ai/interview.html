@@ -1,21 +1,52 @@
-{% load static %}
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Interview</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Voice Interview</title>
+    <script>
+        let questions = {{ questions|safe }};
+        let index = 0;
+
+        function logDebug(message) {
+            const debugBox = document.getElementById("debug-log");
+            debugBox.innerHTML += `<div>> ${message}</div>`;
+        }
+
+        function playNext() {
+            if (index >= questions.length) {
+                logDebug("✅ All questions played. Showing form.");
+                document.getElementById("question-form").style.display = "block";
+                return;
+            }
+
+            let q = questions[index].question;
+            let audio = new Audio("/media/" + q.audio_file);
+            logDebug(`▶️ Playing Q${index + 1}: "${q.text}" for ${q.time_required} seconds`);
+            audio.play();
+
+            index++;
+            setTimeout(playNext, q.time_required * 1000);
+        }
+
+        window.onload = function() {
+            logDebug("🚀 Interview started.");
+            playNext();
+        }
+    </script>
 </head>
-<body class="p-4">
-    <h1>Interview</h1>
-    <form method="POST" action="{% url 'submit' session.id %}">
+<body>
+    <h1>Interview In Progress</h1>
+
+    <!-- 🔍 Debug log box -->
+    <div id="debug-log" style="background:#f0f0f0; border:1px solid #ccc; padding:10px; margin-bottom:20px; font-family:monospace;"></div>
+
+    <!-- 👇 Answer form -->
+    <form id="question-form" method="POST" action="{% url 'submit' session.id %}" style="display:none;">
         {% csrf_token %}
         {% for sq in questions %}
-            <div class="mb-4">
-                <strong>Q{{ forloop.counter }}:</strong> {{ sq.question.text }}<br>
-                <textarea name="q_{{ sq.question.id }}" rows="2" class="form-control"></textarea>
-            </div>
+            <label>{{ sq.question.text }}</label><br>
+            <textarea name="q_{{ sq.question.id }}" rows="3" cols="60"></textarea><br><br>
         {% endfor %}
-        <button type="submit" class="btn btn-success">Submit Answers</button>
+        <button type="submit">Submit</button>
     </form>
 </body>
 </html>
