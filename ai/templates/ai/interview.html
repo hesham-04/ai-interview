@@ -1,0 +1,21 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Interview</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="p-4">
+    <h1>Interview</h1>
+    <form method="POST" action="{% url 'submit' session.id %}">
+        {% csrf_token %}
+        {% for sq in questions %}
+            <div class="mb-4">
+                <strong>Q{{ forloop.counter }}:</strong> {{ sq.question.text }}<br>
+                <textarea name="q_{{ sq.question.id }}" rows="2" class="form-control"></textarea>
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-success">Submit Answers</button>
+    </form>
+</body>
+</html>
